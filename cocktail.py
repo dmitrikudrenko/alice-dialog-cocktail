@@ -2,12 +2,12 @@ import json
 
 
 def handler(event, context):
-    text = text_or_welcome_message(event)
+    response = get_response(event)
     return {
         'version': event['version'],
         'session': event['session'],
         'response': {
-            'text': text,
+            'text': response.text,
             'end_session': 'false'
         }
     }
@@ -21,16 +21,18 @@ def is_gratitude_command(command):
     return command in ['спасибо', 'благодарю', 'благодарочка']
 
 
-def text_or_welcome_message(event):
-    if 'request' in event:
-        request = event['request']
-        if 'command' in request and is_help_command(request['command']):
-            return help_message()
-        elif 'command' in request and is_gratitude_command(request['command']):
-            return gratitude_message()
-        elif 'original_utterance' in request and len(request['original_utterance']) > 0:
-            return give_receipt(request)
-    return welcome_message()
+def get_response(event):
+    if event['new']:
+        return Response(welcome_message())
+
+    request = event['request']
+    command = request['command']
+    if is_help_command(command):
+        return Response(help_message())
+    elif is_gratitude_command(command):
+        return Response(gratitude_message())
+    else:
+        return Response(give_receipt(request))
 
 
 def welcome_message():
@@ -54,10 +56,6 @@ def give_receipt(request):
         return receipt
     else:
         return 'Я пока не знаю рецепта этого коктейля'
-
-
-def intro(name, value):
-    return 'Чтобы приготовить коктейль {}, {}'.format(name, value)
 
 
 class CocktailRecord:
@@ -87,5 +85,10 @@ class Cocktail:
         for record in self.base:
             for name in record.names:
                 if name in phrase or name in words:
-                    return intro(name, record.receipt)
+                    return 'Чтобы приготовить коктейль {}, {}'.format(name, record.receipt)
         return None
+
+
+class Response:
+    def __init__(self, text):
+        self.text = text
