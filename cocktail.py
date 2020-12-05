@@ -1,3 +1,6 @@
+import json
+
+
 def handler(event, context):
     text = text_or_welcome_message(event)
     return {
@@ -71,34 +74,14 @@ class Cocktail:
     base = CocktailBase()
 
     def __init__(self):
-        self.base.append(CocktailRecord(
-            ['дайкири', 'daiquiri'],
-            'смешайте в шейкере полторы унции светлого рома, одну унцию сока лайма и половину унции сахарного сиропа'
-        ))
-        self.base.append(CocktailRecord(
-            ['космополитен'],
-            'смешайте в шейкере полторы унции цитрусовой водки, половину унции трипл-сека, половину унции сока лайма '
-            'и одну унцию клюквенного морса'
-        ))
-        self.base.append(CocktailRecord(
-            ['маргарита'],
-            'смешай в шейкере две унции серебрянной текилы, одну унцию сока лайма, одну унцию трипл-сека и половину '
-            'унции сахарного сиропа. Укрась бокал кружком лайма '
-        ))
-        self.base.append(CocktailRecord(
-            ['манхэттен'],
-            'в стакан для смешивания налей две унции бурбона и одну унцию красного вермута. Добавь дэш ангостуры. '
-            'Наполни стакан льдом и простируй. Бокал с напитком укрась коктейльной вишней '
-        ))
-        self.base.append(CocktailRecord(
-            ['негрони'],
-            'наполни рокс кубиками льда доверху. В равных пропорциях налей в бокал красный вермут, кампари и джин. '
-            'Размешай коктейльной ложкой. Укрась кружком апельсина '
-        ))
-        self.base.append(CocktailRecord(
-            ['последнее слово'],
-            'в равных пропорциях смешай в шейкере зеленый шартрез, джин, ликер мараскино и сок лайма'
-        ))
+        with open("data.json", "r") as read_file:
+            data = json.load(read_file)
+
+        for obj in data:
+            self.base.append(CocktailRecord(
+                obj['names'],
+                obj['receipt']
+            ))
 
     def find(self, phrase, words):
         for record in self.base:
