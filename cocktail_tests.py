@@ -8,6 +8,9 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(cocktail.is_help_command('что ты умеешь'))
         self.assertFalse(cocktail.is_help_command('совсем не помощь'))
 
+    def test_daily_receipt_command(self):
+        self.assertTrue(cocktail.is_daily_recept_command('Расскажи про рецепт дня'))
+
     def test_get_single_word_name_receipt(self):
         receipt = cocktail.Cocktail().find('как приготовить космополитен', ['как', 'приготовить', 'космополитен'])
         self.assertEqual(receipt, 'Чтобы приготовить коктейль космополитен, смешайте в шейкере полторы унции '
@@ -32,7 +35,7 @@ class MyTestCase(unittest.TestCase):
         welcome_message = cocktail.welcome_message()
         self.assertEqual(welcome_message, 'Привет! Я твой личный бармен. Расскажу тебе, как правильно смешать '
                                           'ингредиенты, чтобы получился твой любимый коктейль. Расскажи, что ты хотел '
-                                          'бы выпить.')
+                                          'бы выпить. Или можешь спросить меня про рецепт дня')
 
 
 if __name__ == '__main__':
