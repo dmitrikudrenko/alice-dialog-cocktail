@@ -118,4 +118,5 @@ class Response:
 
 
 if __name__ == '__main__':
+    print('Добавлено {} коктейлей'.format(len(Cocktail().base)))
     print(daily_receipt())
