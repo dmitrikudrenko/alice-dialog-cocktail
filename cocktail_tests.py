@@ -9,7 +9,7 @@ class MyTestCase(unittest.TestCase):
         self.assertFalse(cocktail.is_help_command('совсем не помощь'))
 
     def test_daily_receipt_command(self):
-        self.assertTrue(cocktail.is_daily_recept_command('Расскажи про рецепт дня'))
+        self.assertTrue(cocktail.is_daily_receipt_command('Расскажи про коктейль дня'))
 
     def test_get_single_word_name_receipt(self):
         receipt = cocktail.Cocktail().find('как приготовить космополитен', ['как', 'приготовить', 'космополитен'])

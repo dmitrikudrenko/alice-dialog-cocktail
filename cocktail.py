@@ -22,8 +22,8 @@ def is_gratitude_command(command):
     return command in ['спасибо', 'благодарю', 'благодарочка']
 
 
-def is_daily_recept_command(command):
-    return 'рецепт дня' in command
+def is_daily_receipt_command(command):
+    return 'коктейль дня' in command
 
 
 def get_response(event):
@@ -36,7 +36,7 @@ def get_response(event):
         return Response(help_message())
     elif is_gratitude_command(command):
         return Response(gratitude_message())
-    elif is_daily_recept_command(command):
+    elif is_daily_receipt_command(command):
         return Response(daily_receipt())
     else:
         return Response(give_receipt(request))
