@@ -27,7 +27,7 @@ def is_daily_recept_command(command):
 
 
 def get_response(event):
-    if event['new']:
+    if event['session']['new']:
         return Response(welcome_message())
 
     request = event['request']
