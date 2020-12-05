@@ -35,7 +35,8 @@ def help_message():
 
 def give_receipt(request):
     tokens = request['nlu']['tokens']
-    receipt = Cocktail().find(tokens)
+    original_utterance = request['original_utterance']
+    receipt = Cocktail().find(original_utterance, tokens)
     if receipt:
         return receipt
     else:
@@ -53,11 +54,7 @@ class CocktailRecord:
 
 
 class CocktailBase(list):
-    def find(self, word):
-        for record in self:
-            if word in record.names:
-                return record.receipt
-        return None
+    pass
 
 
 class Cocktail:
@@ -88,10 +85,14 @@ class Cocktail:
             'наполни рокс кубиками льда доверху. В равных пропорциях налей в бокал красный вермут, кампари и джин. '
             'Размешай коктейльной ложкой. Укрась кружком апельсина '
         ))
+        self.base.append(CocktailRecord(
+            ['последнее слово'],
+            'в равных пропорциях смешай в шейкере зеленый шартрез, джин, ликер мараскино и сок лайма'
+        ))
 
-    def find(self, words):
-        for word in words:
-            found_cocktail = self.base.find(word)
-            if found_cocktail:
-                return intro(word, found_cocktail)
+    def find(self, phrase, words):
+        for record in self.base:
+            for name in record.names:
+                if name in phrase or name in words:
+                    return intro(name, record.receipt)
         return None
