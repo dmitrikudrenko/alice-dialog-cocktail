@@ -14,11 +14,17 @@ def is_help_command(command):
     return command in ['помощь', 'что ты умеешь']
 
 
+def is_gratitude_command(command):
+    return command in ['спасибо', 'благодарю', 'благодарочка']
+
+
 def text_or_welcome_message(event):
     if 'request' in event:
         request = event['request']
         if 'command' in request and is_help_command(request['command']):
             return help_message()
+        elif 'command' in request and is_gratitude_command(request['command']):
+            return gratitude_message()
         elif 'original_utterance' in request and len(request['original_utterance']) > 0:
             return give_receipt(request)
     return welcome_message()
@@ -31,6 +37,10 @@ def welcome_message():
 
 def help_message():
     return 'Я могу рассказать тебе, как приготовить твой любимый коктейль. Просто скажи его название.'
+
+
+def gratitude_message():
+    return 'Пожалуйста. Главное - соблюдать культуру пития.'
 
 
 def give_receipt(request):
