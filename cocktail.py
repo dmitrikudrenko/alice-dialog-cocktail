@@ -44,7 +44,7 @@ def get_response(event):
 
 def welcome_message():
     return 'Привет! Я твой личный бармен. Расскажу тебе, как правильно смешать ингредиенты, чтобы получился твой ' \
-           'любимый коктейль. Расскажи, что ты хотел бы выпить. Или можешь спросить меня про рецепт дня'
+           'любимый коктейль. Расскажи, что ты хотел бы выпить. Или можешь спросить меня про коктейль дня'
 
 
 def help_message():
@@ -104,7 +104,8 @@ class Cocktail:
         receipts_count = len(self.base)
         daily_receipt_index = max(today, receipts_count) % min(today, receipts_count)
         record = self.base[daily_receipt_index]
-        return self.intro(record.names[0], record)
+        name = record.names[0]
+        return 'Коктейль дня - {}. {}'.format(name, self.intro(name, record))
 
     @staticmethod
     def intro(name, record):
