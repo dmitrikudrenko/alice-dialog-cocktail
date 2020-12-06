@@ -10,20 +10,11 @@ def handler(event, context):
         'response': {
             'text': response.text,
             'end_session': 'false'
+        },
+        'session_state': {
+            'last_receipt': response.text
         }
     }
-
-
-def is_help_command(command):
-    return command in ['помощь', 'что ты умеешь']
-
-
-def is_gratitude_command(command):
-    return command in ['спасибо', 'благодарю', 'благодарочка']
-
-
-def is_daily_receipt_command(command):
-    return 'коктейль дня' in command
 
 
 def get_response(event):
@@ -38,8 +29,33 @@ def get_response(event):
         return Response(gratitude_message())
     elif is_daily_receipt_command(command):
         return Response(daily_receipt())
+    elif is_repeat_command(command):
+        if 'state' in event and 'session' in event['state'] and 'last_receipt' in event['state']['session']:
+            return Response(event['state']['session']['last_receipt'])
+        else:
+            return Response(nothing_to_repeat())
     else:
-        return Response(give_receipt(request))
+        receipt = give_receipt(request)
+        if receipt:
+            return Response(receipt)
+        else:
+            return Response(unknown())
+
+
+def is_help_command(command):
+    return command in ['помощь', 'что ты умеешь']
+
+
+def is_gratitude_command(command):
+    return command in ['спасибо', 'благодарю', 'благодарочка']
+
+
+def is_daily_receipt_command(command):
+    return 'коктейль дня' in command
+
+
+def is_repeat_command(command):
+    return command in ['повтори', 'еще раз', 'ещё раз']
 
 
 def welcome_message():
@@ -55,6 +71,14 @@ def gratitude_message():
     return 'Пожалуйста. Главное - соблюдать культуру пития.'
 
 
+def unknown():
+    return 'Я пока не знаю рецепта этого коктейля'
+
+
+def nothing_to_repeat():
+    return 'Что повторить?'
+
+
 def daily_receipt():
     return Cocktail().daily()
 
@@ -62,11 +86,7 @@ def daily_receipt():
 def give_receipt(request):
     tokens = request['nlu']['tokens']
     original_utterance = request['original_utterance']
-    receipt = Cocktail().find(original_utterance, tokens)
-    if receipt:
-        return receipt
-    else:
-        return 'Я пока не знаю рецепта этого коктейля'
+    return Cocktail().find(original_utterance, tokens)
 
 
 class CocktailRecord:
