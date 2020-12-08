@@ -11,7 +11,7 @@ def handler(event, context):
             'text': response.text,
             'end_session': 'false'
         },
-        'session_state': {
+        'user_state_update': {
             'last_receipt': response.text
         }
     }
@@ -30,8 +30,11 @@ def get_response(event):
     elif is_daily_receipt_command(command):
         return Response(daily_receipt())
     elif is_repeat_command(command):
-        if 'state' in event and 'session' in event['state'] and 'last_receipt' in event['state']['session']:
-            return Response(event['state']['session']['last_receipt'])
+        if 'state' in event \
+                and 'session' in event['state'] \
+                and 'user' in event['state']['session'] \
+                and 'last_receipt' in event['state']['session']['user']:
+            return Response(event['state']['session']['user']['last_receipt'])
         else:
             return Response(nothing_to_repeat())
     else:
