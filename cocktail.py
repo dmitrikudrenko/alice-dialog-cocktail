@@ -10,9 +10,6 @@ def handler(event, context):
         'response': {
             'text': response.text,
             'end_session': 'false'
-        },
-        'user_state_update': {
-            'last_receipt': response.text
         }
     }
     if response.cocktail:
@@ -28,6 +25,7 @@ def handler(event, context):
                 'card': {
                     'type': 'BigImage',
                     'image_id': response.cocktail.image,
+                    'title': response.cocktail.name,
                     'description': response.text
                 }
             }
@@ -110,8 +108,9 @@ def give_receipt(request):
 
 
 class CocktailRecord:
-    def __init__(self, names, receipt, image):
-        self.names = names
+    def __init__(self, name, extra_names, receipt, image):
+        self.name = name
+        self.extra_names = extra_names
         self.receipt = receipt
         self.image = image
 
@@ -129,16 +128,21 @@ class Cocktail:
 
         for obj in data:
             self.base.append(CocktailRecord(
-                obj['names'],
+                obj['original_name'],
+                obj.get('names'),
                 obj['receipt'],
-                obj.get('image', None)
+                obj.get('image')
             ))
 
     def find(self, phrase, words):
         for record in self.base:
-            for name in record.names:
-                if name in phrase or name in words:
-                    return Response(self.intro(name, record), record)
+            if record.name in phrase or record.name in words:
+                return Response(self.intro(record.name, record), record)
+
+            if record.extra_names:
+                for name in record.extra_names:
+                    if name in phrase or name in words:
+                        return Response(self.intro(name, record), record)
         return None
 
     def daily(self):
@@ -146,7 +150,7 @@ class Cocktail:
         receipts_count = len(self.base)
         daily_receipt_index = max(today, receipts_count) % min(today, receipts_count)
         record = self.base[daily_receipt_index]
-        name = record.names[0]
+        name = record.name
         return 'Коктейль дня - {}. {}'.format(name, self.intro(name, record))
 
     @staticmethod
