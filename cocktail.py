@@ -4,7 +4,7 @@ from datetime import date
 
 def handler(event, context):
     response = get_response(event)
-    return {
+    alice_response = {
         'version': event['version'],
         'session': event['session'],
         'response': {
@@ -15,6 +15,24 @@ def handler(event, context):
             'last_receipt': response.text
         }
     }
+    if response.cocktail:
+        alice_response.update(
+            {
+                'user_state_update': {
+                    'last_receipt': response.text
+                }
+            }
+        )
+        alice_response['response'].update(
+            {
+                'card': {
+                    'type': 'BigImage',
+                    'image_id': response.cocktail.image,
+                    'description': response.text
+                }
+            }
+        )
+    return alice_response
 
 
 def get_response(event):
@@ -37,9 +55,9 @@ def get_response(event):
         else:
             return Response(nothing_to_repeat())
     else:
-        receipt = give_receipt(request)
-        if receipt:
-            return Response(receipt)
+        response = give_receipt(request)
+        if response:
+            return response
         else:
             return Response(unknown())
 
@@ -92,9 +110,10 @@ def give_receipt(request):
 
 
 class CocktailRecord:
-    def __init__(self, names, receipt):
+    def __init__(self, names, receipt, image):
         self.names = names
         self.receipt = receipt
+        self.image = image
 
 
 class CocktailBase(list):
@@ -111,14 +130,15 @@ class Cocktail:
         for obj in data:
             self.base.append(CocktailRecord(
                 obj['names'],
-                obj['receipt']
+                obj['receipt'],
+                obj.get('image', None)
             ))
 
     def find(self, phrase, words):
         for record in self.base:
             for name in record.names:
                 if name in phrase or name in words:
-                    return self.intro(name, record)
+                    return Response(self.intro(name, record), record)
         return None
 
     def daily(self):
@@ -135,8 +155,9 @@ class Cocktail:
 
 
 class Response:
-    def __init__(self, text):
+    def __init__(self, text, cocktail=None):
         self.text = text
+        self.cocktail = cocktail
 
 
 if __name__ == '__main__':
