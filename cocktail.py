@@ -31,10 +31,9 @@ def get_response(event):
         return Response(daily_receipt())
     elif is_repeat_command(command):
         if 'state' in event \
-                and 'session' in event['state'] \
-                and 'user' in event['state']['session'] \
-                and 'last_receipt' in event['state']['session']['user']:
-            return Response(event['state']['session']['user']['last_receipt'])
+                and 'user' in event['state'] \
+                and 'last_receipt' in event['state']['user']:
+            return Response(event['state']['user']['last_receipt'])
         else:
             return Response(nothing_to_repeat())
     else:
