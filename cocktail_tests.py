@@ -14,7 +14,7 @@ class MyTestCase(unittest.TestCase):
     def test_get_single_word_name_receipt(self):
         receipt = cocktail.Cocktail().find('как приготовить космополитен', ['как', 'приготовить', 'космополитен'])
         self.assertEqual(receipt, 'Чтобы приготовить коктейль космополитен, смешайте в шейкере полторы унции '
-                                  'цитрусовой водки, половину унции трипл-сека, половину унции сока лайма и одну '
+                                  'цитрусовой водки, половину унции трипл-сек, половину унции сока лайма и одну '
                                   'унцию клюквенного морса')
 
     def test_get_multi_word_name_receipt(self):
