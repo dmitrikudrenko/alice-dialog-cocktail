@@ -36,12 +36,12 @@ def handler(event, context):
 
 
 def get_response(event):
-    if event['session']['new']:
-        return Response(welcome_message())
-
     request = event['request']
     command = request['command']
-    if is_help_command(command):
+
+    if event['session']['new'] and command == '':
+        return Response(welcome_message())
+    elif is_help_command(command):
         return Response(help_message())
     elif is_gratitude_command(command):
         return Response(gratitude_message())
