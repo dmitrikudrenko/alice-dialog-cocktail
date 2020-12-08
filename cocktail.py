@@ -1,5 +1,6 @@
-import json
 from datetime import date
+import json
+import random
 
 
 def handler(event, context):
@@ -12,15 +13,19 @@ def handler(event, context):
             'end_session': 'false'
         }
     }
-    alice_response['response'].update(
-        {
-            'buttons': [
-                {
-                    'title': 'Коктейль дня'
-                }
-            ]
-        }
-    )
+    if response.new_session:
+        alice_response['response'].update(
+            {
+                'buttons': [
+                    {
+                        'title': 'Коктейль дня'
+                    },
+                    {
+                        'title': 'Случайный коктейль'
+                    }
+                ]
+            }
+        )
     if response.cocktail:
         alice_response.update(
             {
@@ -47,13 +52,15 @@ def get_response(event):
     command = request['command']
 
     if event['session']['new'] and command == '':
-        return Response(welcome_message())
+        return Response(welcome_message(), new_session=True)
     elif is_help_command(command):
         return Response(help_message())
     elif is_gratitude_command(command):
         return Response(gratitude_message())
     elif is_daily_receipt_command(command):
         return Response(daily_receipt())
+    elif is_random_receipt_command(command):
+        return Response(random_receipt())
     elif is_repeat_command(command):
         if 'state' in event \
                 and 'user' in event['state'] \
@@ -79,6 +86,10 @@ def is_gratitude_command(command):
 
 def is_daily_receipt_command(command):
     return 'коктейль дня' in command
+
+
+def is_random_receipt_command(command):
+    return 'случайный' in command
 
 
 def is_repeat_command(command):
@@ -108,6 +119,10 @@ def nothing_to_repeat():
 
 def daily_receipt():
     return Cocktail().daily()
+
+
+def random_receipt():
+    return Cocktail().random()
 
 
 def give_receipt(request):
@@ -166,11 +181,19 @@ class Cocktail:
     def intro(name, record):
         return 'Чтобы приготовить коктейль {}, {}'.format(name, record.receipt)
 
+    def random(self):
+        receipts_count = len(self.base)
+        random_receipt_index = random.randint(0, receipts_count - 1)
+        record = self.base[random_receipt_index]
+        name = record.name
+        return 'Коктейль - {}. {}'.format(name, self.intro(name, record))
+
 
 class Response:
-    def __init__(self, text, cocktail=None):
+    def __init__(self, text, cocktail=None, new_session=False):
         self.text = text
         self.cocktail = cocktail
+        self.new_session = new_session
 
 
 if __name__ == '__main__':
