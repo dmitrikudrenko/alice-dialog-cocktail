@@ -118,27 +118,27 @@ def nothing_to_repeat_message():
 
 
 def daily_receipt_response():
-    daily_cocktail = Cocktail().daily()
+    daily_cocktail = CocktailList().daily()
     return Response('Коктейль дня - {}. {}'.format(daily_cocktail.name, intro(daily_cocktail)), daily_cocktail)
 
 
 def random_receipt_response():
-    random_cocktail = Cocktail().random()
+    random_cocktail = CocktailList().random()
     return Response('Коктейль {}. {}'.format(random_cocktail.name, intro(random_cocktail)), random_cocktail)
 
 
 def query_receipt_response(request):
     tokens = request['nlu']['tokens']
     original_utterance = request['original_utterance']
-    found_cocktail = Cocktail().find(original_utterance, tokens)
+    found_cocktail = CocktailList().find(original_utterance, tokens)
     return Response(intro(found_cocktail), found_cocktail)
 
 
-def intro(record):
-    return 'Чтобы приготовить коктейль {}, {}'.format(record.name, record.receipt)
+def intro(c):
+    return 'Чтобы приготовить коктейль {}, {}'.format(c.name, c.receipt)
 
 
-class CocktailRecord:
+class Cocktail:
     def __init__(self, name, extra_names, receipt, image, ingredients):
         self.name = name
         self.extra_names = extra_names
@@ -147,19 +147,14 @@ class CocktailRecord:
         self.ingredients = ingredients
 
 
-class CocktailBase(list):
-    pass
-
-
-class Cocktail:
-    base = CocktailBase()
-
+class CocktailList(list):
     def __init__(self):
+        super().__init__()
         with open("data.json", "r") as read_file:
             data = json.load(read_file)
 
         for obj in data:
-            self.base.append(CocktailRecord(
+            self.append(Cocktail(
                 obj['original_name'],
                 obj.get('names'),
                 obj['receipt'],
@@ -168,28 +163,26 @@ class Cocktail:
             ))
 
     def find(self, phrase, words):
-        for record in self.base:
-            if record.name in phrase or record.name in words:
-                return record
+        for c in self:
+            if c.name in phrase or c.name in words:
+                return c
 
-            if record.extra_names:
-                for name in record.extra_names:
+            if c.extra_names:
+                for name in c.extra_names:
                     if name in phrase or name in words:
-                        return record
+                        return c
         return None
 
     def daily(self):
         today = int(date.today().strftime("%d"))
-        receipts_count = len(self.base)
+        receipts_count = len(self)
         daily_receipt_index = max(today, receipts_count) % min(today, receipts_count)
-        record = self.base[daily_receipt_index]
-        return record
+        return self[daily_receipt_index]
 
     def random(self):
-        receipts_count = len(self.base)
+        receipts_count = len(self)
         random_receipt_index = random.randint(0, receipts_count - 1)
-        record = self.base[random_receipt_index]
-        return record
+        return self[random_receipt_index]
 
 
 class Response:
@@ -200,4 +193,4 @@ class Response:
 
 
 if __name__ == '__main__':
-    print('Добавлено {} коктейлей'.format(len(Cocktail().base)))
+    print('Добавлено {} коктейлей'.format(len(CocktailList())))
