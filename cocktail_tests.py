@@ -44,6 +44,10 @@ class MyTestCase(unittest.TestCase):
     def test_description_length(self):
         pass
 
+    def test_equal_find(self):
+        found_cocktail = cocktail.CocktailList().find('клубничный дайкири', [])
+        self.assertEqual(found_cocktail.get_name(), 'клубничный дайкири')
+
 
 if __name__ == '__main__':
     unittest.main()

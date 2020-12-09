@@ -182,6 +182,10 @@ class CocktailList(list):
             ))
 
     def find(self, phrase, words):
+        equal = self.find_by_equal(phrase)
+        if equal:
+            return equal
+
         for c in self:
             if c.name in phrase or c.name in words:
                 return c
@@ -190,6 +194,12 @@ class CocktailList(list):
                 for name in c.extra_names:
                     if name in phrase or name in words:
                         return c
+        return None
+
+    def find_by_equal(self, phrase):
+        for c in self:
+            if c.name == phrase:
+                return c
         return None
 
     def daily(self):
