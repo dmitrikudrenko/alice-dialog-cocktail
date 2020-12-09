@@ -120,32 +120,48 @@ def nothing_to_repeat_message():
 
 def daily_receipt_response():
     daily_cocktail = CocktailList().daily()
-    return Response('Коктейль дня - {}. {}'.format(daily_cocktail.name, intro(daily_cocktail)), daily_cocktail)
+    return Response('Коктейль дня - {}. {}'.format(daily_cocktail.get_name(), intro(daily_cocktail)), daily_cocktail)
 
 
 def random_receipt_response():
     random_cocktail = CocktailList().random()
-    return Response('Коктейль {}. {}'.format(random_cocktail.name, intro(random_cocktail)), random_cocktail)
+    return Response('Коктейль {}. {}'.format(random_cocktail.get_name(), intro(random_cocktail)), random_cocktail)
 
 
 def query_receipt_response(request):
     tokens = request['nlu']['tokens']
     original_utterance = request['original_utterance']
     found_cocktail = CocktailList().find(original_utterance, tokens)
-    return Response(intro(found_cocktail), found_cocktail)
+    if found_cocktail:
+        return Response(intro(found_cocktail), found_cocktail)
+    return None
 
 
 def intro(c):
-    return 'Чтобы приготовить коктейль {}, {}'.format(c.name, c.receipt)
+    return 'Чтобы приготовить коктейль {}, {}'.format(c.get_name(), c.get_receipt())
 
 
 class Cocktail:
-    def __init__(self, name, extra_names, receipt, image, ingredients):
+    def __init__(self, name, extra_names, receipt, image, ingredients, name_tts, receipt_tts):
         self.name = name
         self.extra_names = extra_names
         self.receipt = receipt
         self.image = image
         self.ingredients = ingredients
+        self.name_tts = name_tts
+        self.receipt_tts = receipt_tts
+
+    def get_name(self):
+        if self.name_tts:
+            return self.name_tts
+        else:
+            return self.name
+
+    def get_receipt(self):
+        if self.receipt_tts:
+            return self.receipt_tts
+        else:
+            return self.receipt
 
 
 class CocktailList(list):
@@ -160,7 +176,9 @@ class CocktailList(list):
                 obj.get('names'),
                 obj['receipt'],
                 obj.get('image'),
-                obj.get('ingredients')
+                obj.get('ingredients'),
+                obj.get('name_tts'),
+                obj.get('receipt_tts')
             ))
 
     def find(self, phrase, words):
