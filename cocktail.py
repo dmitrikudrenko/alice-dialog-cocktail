@@ -39,8 +39,7 @@ def handler(event, context):
                 'card': {
                     'type': 'BigImage',
                     'image_id': response.cocktail.image,
-                    'title': response.cocktail.name,
-                    'description': response.text
+                    'title': response.cocktail.name
                 }
             }
         )
@@ -58,9 +57,9 @@ def get_response(event):
     elif is_gratitude_command(command):
         return Response(gratitude_message())
     elif is_daily_receipt_command(command):
-        return Response(daily_receipt())
+        return daily_receipt()
     elif is_random_receipt_command(command):
-        return Response(random_receipt())
+        return random_receipt()
     elif is_repeat_command(command):
         if 'state' in event \
                 and 'user' in event['state'] \
@@ -175,7 +174,7 @@ class Cocktail:
         daily_receipt_index = max(today, receipts_count) % min(today, receipts_count)
         record = self.base[daily_receipt_index]
         name = record.name
-        return 'Коктейль дня - {}. {}'.format(name, self.intro(name, record))
+        return Response('Коктейль дня - {}. {}'.format(name, self.intro(name, record)), record)
 
     @staticmethod
     def intro(name, record):
@@ -186,7 +185,7 @@ class Cocktail:
         random_receipt_index = random.randint(0, receipts_count - 1)
         record = self.base[random_receipt_index]
         name = record.name
-        return 'Коктейль - {}. {}'.format(name, self.intro(name, record))
+        return Response('Коктейль - {}. {}'.format(name, self.intro(name, record)), record)
 
 
 class Response:
