@@ -39,6 +39,9 @@ class MyTestCase(unittest.TestCase):
                                           'ингредиенты, чтобы получился твой любимый коктейль. Расскажи, что ты хотел '
                                           'бы выпить. Или можешь спросить меня про коктейль дня')
 
+    def test_description_length(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()

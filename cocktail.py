@@ -42,7 +42,7 @@ def handler(event, context):
             }
         }
         if cocktail.ingredients:
-            card['card'].update({'description': cocktail.ingredients})
+            card['card'].update({'description': cocktail.ingredients})  # до 255 символов
         alice_response['response'].update(card)
     return alice_response
 
