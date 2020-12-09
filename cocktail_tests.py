@@ -12,15 +12,17 @@ class MyTestCase(unittest.TestCase):
         self.assertTrue(cocktail.is_daily_receipt_command('Расскажи про коктейль дня'))
 
     def test_get_single_word_name_receipt(self):
-        response = cocktail.Cocktail().find('как приготовить космополитен', ['как', 'приготовить', 'космополитен'])
-        self.assertEqual(response.text, 'Чтобы приготовить коктейль космополитен, смешайте в шейкере полторы унции '
-                                        'цитрусовой водки, половину унции трипл-сек, половину унции сока лайма и одну '
-                                        'унцию клюквенного морса')
+        found_cocktail = cocktail.Cocktail().find('как приготовить космополитен',
+                                                  ['как', 'приготовить', 'космополитен'])
+        self.assertEqual(cocktail.intro(found_cocktail),
+                         'Чтобы приготовить коктейль космополитен, смешайте в шейкере полторы унции '
+                         'цитрусовой водки, половину унции трипл-сек, половину унции сока лайма и одну '
+                         'унцию клюквенного морса')
 
     def test_get_multi_word_name_receipt(self):
-        response = cocktail.Cocktail().find('как приготовить последнее слово',
-                                            ['как', 'приготовить', 'последнее', 'слово'])
-        self.assertEqual(response.text,
+        found_cocktail = cocktail.Cocktail().find('как приготовить последнее слово',
+                                                  ['как', 'приготовить', 'последнее', 'слово'])
+        self.assertEqual(cocktail.intro(found_cocktail),
                          'Чтобы приготовить коктейль последнее слово, в равных пропорциях смешай в шейкере '
                          'зеленый шартрез, джин, ликер мараскино и сок лайма')
 

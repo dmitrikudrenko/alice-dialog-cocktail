@@ -58,22 +58,22 @@ def get_response(event):
     elif is_gratitude_command(command):
         return Response(gratitude_message())
     elif is_daily_receipt_command(command):
-        return daily_receipt()
+        return daily_receipt_response()
     elif is_random_receipt_command(command):
-        return random_receipt()
+        return random_receipt_response()
     elif is_repeat_command(command):
         if 'state' in event \
                 and 'user' in event['state'] \
                 and 'last_receipt' in event['state']['user']:
             return Response(event['state']['user']['last_receipt'])
         else:
-            return Response(nothing_to_repeat())
+            return Response(nothing_to_repeat_message())
     else:
-        response = give_receipt(request)
+        response = query_receipt_response(request)
         if response:
             return response
         else:
-            return Response(unknown())
+            return Response(unknown_message())
 
 
 def is_help_command(command):
@@ -109,26 +109,33 @@ def gratitude_message():
     return 'Пожалуйста. Главное - соблюдать культуру пития.'
 
 
-def unknown():
+def unknown_message():
     return 'Я пока не знаю рецепта этого коктейля'
 
 
-def nothing_to_repeat():
+def nothing_to_repeat_message():
     return 'Что повторить?'
 
 
-def daily_receipt():
-    return Cocktail().daily()
+def daily_receipt_response():
+    daily_cocktail = Cocktail().daily()
+    return Response('Коктейль дня - {}. {}'.format(daily_cocktail.name, intro(daily_cocktail)), daily_cocktail)
 
 
-def random_receipt():
-    return Cocktail().random()
+def random_receipt_response():
+    random_cocktail = Cocktail().random()
+    return Response('Коктейль {}. {}'.format(random_cocktail.name, intro(random_cocktail)), random_cocktail)
 
 
-def give_receipt(request):
+def query_receipt_response(request):
     tokens = request['nlu']['tokens']
     original_utterance = request['original_utterance']
-    return Cocktail().find(original_utterance, tokens)
+    found_cocktail = Cocktail().find(original_utterance, tokens)
+    return Response(intro(found_cocktail), found_cocktail)
+
+
+def intro(record):
+    return 'Чтобы приготовить коктейль {}, {}'.format(record.name, record.receipt)
 
 
 class CocktailRecord:
@@ -163,12 +170,12 @@ class Cocktail:
     def find(self, phrase, words):
         for record in self.base:
             if record.name in phrase or record.name in words:
-                return Response(self.intro(record.name, record), record)
+                return record
 
             if record.extra_names:
                 for name in record.extra_names:
                     if name in phrase or name in words:
-                        return Response(self.intro(name, record), record)
+                        return record
         return None
 
     def daily(self):
@@ -176,19 +183,13 @@ class Cocktail:
         receipts_count = len(self.base)
         daily_receipt_index = max(today, receipts_count) % min(today, receipts_count)
         record = self.base[daily_receipt_index]
-        name = record.name
-        return Response('Коктейль дня - {}. {}'.format(name, self.intro(name, record)), record)
-
-    @staticmethod
-    def intro(name, record):
-        return 'Чтобы приготовить коктейль {}, {}'.format(name, record.receipt)
+        return record
 
     def random(self):
         receipts_count = len(self.base)
         random_receipt_index = random.randint(0, receipts_count - 1)
         record = self.base[random_receipt_index]
-        name = record.name
-        return Response('Коктейль - {}. {}'.format(name, self.intro(name, record)), record)
+        return record
 
 
 class Response:
