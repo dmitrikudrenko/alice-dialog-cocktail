@@ -13,19 +13,20 @@ def handler(event, context):
             'end_session': 'false'
         }
     }
-    if response.new_session:
-        alice_response['response'].update(
-            {
-                'buttons': [
-                    {
-                        'title': 'Коктейль дня'
-                    },
-                    {
-                        'title': 'Случайный коктейль'
-                    }
-                ]
-            }
-        )
+    alice_response['response'].update(
+        {
+            'buttons': [
+                {
+                    'title': 'Коктейль дня',
+                    'hide': 'true'
+                },
+                {
+                    'title': 'Случайный коктейль',
+                    'hide': 'true'
+                }
+            ]
+        }
+    )
     cocktail = response.cocktail
     if cocktail:
         alice_response.update(
