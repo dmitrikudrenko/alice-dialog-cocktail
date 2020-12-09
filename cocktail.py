@@ -26,7 +26,8 @@ def handler(event, context):
                 ]
             }
         )
-    if response.cocktail:
+    cocktail = response.cocktail
+    if cocktail:
         alice_response.update(
             {
                 'user_state_update': {
@@ -34,15 +35,15 @@ def handler(event, context):
                 }
             }
         )
-        alice_response['response'].update(
-            {
-                'card': {
-                    'type': 'BigImage',
-                    'image_id': response.cocktail.image,
-                    'title': response.cocktail.name
-                }
+        card = {
+            'card': {
+                'type': 'BigImage',
+                'image_id': cocktail.image
             }
-        )
+        }
+        if cocktail.ingredients:
+            card['card'].update({'description': cocktail.ingredients})
+        alice_response['response'].update(card)
     return alice_response
 
 
@@ -131,11 +132,12 @@ def give_receipt(request):
 
 
 class CocktailRecord:
-    def __init__(self, name, extra_names, receipt, image):
+    def __init__(self, name, extra_names, receipt, image, ingredients):
         self.name = name
         self.extra_names = extra_names
         self.receipt = receipt
         self.image = image
+        self.ingredients = ingredients
 
 
 class CocktailBase(list):
@@ -154,7 +156,8 @@ class Cocktail:
                 obj['original_name'],
                 obj.get('names'),
                 obj['receipt'],
-                obj.get('image')
+                obj.get('image'),
+                obj.get('ingredients')
             ))
 
     def find(self, phrase, words):
@@ -197,4 +200,3 @@ class Response:
 
 if __name__ == '__main__':
     print('Добавлено {} коктейлей'.format(len(Cocktail().base)))
-    print(daily_receipt())
