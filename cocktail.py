@@ -17,11 +17,11 @@ def handler(event, context):
         {
             'buttons': [
                 {
-                    'title': 'Коктейль дня',
+                    'title': '📅 Коктейль дня',
                     'hide': 'true'
                 },
                 {
-                    'title': 'Случайный коктейль',
+                    'title': '✨ Случайный коктейль',
                     'hide': 'true'
                 }
             ]
@@ -39,7 +39,8 @@ def handler(event, context):
         card = {
             'card': {
                 'type': 'BigImage',
-                'image_id': cocktail.image
+                'image_id': cocktail.image,
+                'title': cocktail.name.capitalize()
             }
         }
         if cocktail.ingredients:
