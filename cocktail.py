@@ -1,9 +1,13 @@
-from datetime import date
+from datetime import datetime
 import json
 import random
 
 
 def handler(event, context):
+    return handle(event)
+
+
+def handle(event):
     response = get_response(event)
     alice_response = {
         'version': event['version'],
@@ -54,7 +58,7 @@ def get_response(event):
     command = request['command']
 
     if event['session']['new'] and command == '':
-        return Response(welcome_message(), new_session=True)
+        return Response(welcome_message())
     elif is_help_command(command):
         return Response(help_message())
     elif is_gratitude_command(command):
@@ -204,9 +208,9 @@ class CocktailList(list):
         return None
 
     def daily(self):
-        today = int(date.today().strftime("%d"))
+        day_of_the_year = datetime.now().timetuple().tm_yday
         receipts_count = len(self)
-        daily_receipt_index = max(today, receipts_count) % min(today, receipts_count)
+        daily_receipt_index = day_of_the_year % receipts_count
         return self[daily_receipt_index]
 
     def random(self):
@@ -216,10 +220,9 @@ class CocktailList(list):
 
 
 class Response:
-    def __init__(self, text, cocktail=None, new_session=False):
+    def __init__(self, text, cocktail=None):
         self.text = text
         self.cocktail = cocktail
-        self.new_session = new_session
 
 
 if __name__ == '__main__':

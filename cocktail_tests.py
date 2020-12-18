@@ -1,52 +1,81 @@
 import unittest
+from freezegun import freeze_time
 import cocktail
+from cocktail import CocktailList
 
 
-class MyTestCase(unittest.TestCase):
+class DataTestCase(unittest.TestCase):
+    def test_name_exists(self):
+        """У каждого коктейля должно быть название"""
+        for item in CocktailList():
+            self.assertTrue(len(item.name) > 0)
+
+    def test_receipt_exists(self):
+        """У каждого коктейля должен быть рецепт"""
+        for item in CocktailList():
+            self.assertTrue(len(item.receipt) > 0)
+
+    def test_description(self):
+        """У каждого коктейля должны быть прописаны ингредиенты, но не больше 255 символов"""
+        for item in CocktailList():
+            self.assertTrue(0 < len(item.ingredients) <= 255)
+
+
+class DialogTestCase(unittest.TestCase):
+    def test_welcome_message_for_new_session_without_command(self):
+        result = cocktail.handle(create_request('', True))
+        self.assertEqual(result['response']['text'],
+                         'Привет! Я твой личный бармен. Расскажу тебе, как правильно смешать ингредиенты, чтобы получился твой '
+                         'любимый коктейль. Расскажи, что ты хотел бы выпить. Или можешь спросить меня про коктейль дня')
+
     def test_help_command(self):
-        self.assertTrue(cocktail.is_help_command('помощь'))
-        self.assertTrue(cocktail.is_help_command('что ты умеешь'))
-        self.assertFalse(cocktail.is_help_command('совсем не помощь'))
+        help_commands = ['помощь', 'что ты умеешь']
+        for command in help_commands:
+            result = cocktail.handle(create_request(command))
+            self.assertEqual(result['response']['text'],
+                             'Я могу рассказать тебе, как приготовить твой любимый коктейль. Просто скажи его название.')
 
-    def test_daily_receipt_command(self):
-        self.assertTrue(cocktail.is_daily_receipt_command('Расскажи про коктейль дня'))
+    def test_gratitude_command(self):
+        gratitude_commands = ['спасибо', 'благодарю', 'благодарочка']
+        for command in gratitude_commands:
+            result = cocktail.handle(create_request(command))
+            self.assertEqual(result['response']['text'], 'Пожалуйста. Главное - соблюдать культуру пития.')
 
-    def test_get_single_word_name_receipt(self):
-        found_cocktail = cocktail.CocktailList().find('как приготовить космополитен',
-                                                      ['как', 'приготовить', 'космополитен'])
-        self.assertEqual(cocktail.intro(found_cocktail),
-                         'Чтобы приготовить коктейль космополитен, смешайте в шейкере полторы унции '
-                         'цитрусовой водки, половину унции трипл-сек, половину унции сока лайма и одну '
-                         'унцию клюквенного морса')
+    @freeze_time("2020-12-19")
+    def test_daily_cocktail(self):
+        result = cocktail.handle(create_request('Расскажи про коктейль дня'))
+        self.assertEqual(result['response']['card']['title'], 'Негрони')
 
-    def test_get_multi_word_name_receipt(self):
-        found_cocktail = cocktail.CocktailList().find('как приготовить последнее слово',
-                                                      ['как', 'приготовить', 'последнее', 'слово'])
-        self.assertEqual(cocktail.intro(found_cocktail),
+    @freeze_time("2020-12-20")
+    def test_daily_cocktail(self):
+        result = cocktail.handle(create_request('Расскажи про коктейль дня'))
+        self.assertEqual(result['response']['card']['title'], 'Последнее слово')
+
+    def test_random_cocktail(self):
+        result = cocktail.handle(create_request('Случайный коктейль'))
+        self.assertIsNotNone(result['response']['card']['title'])
+
+    def test_cocktail_not_found(self):
+        result = cocktail.handle(create_request('Неизвестный коктейль'))
+        self.assertEqual(result['response']['text'], 'Я пока не знаю рецепта этого коктейля')
+
+    def test_single_word_cocktail(self):
+        result = cocktail.handle(create_request('как приготовить космополитен'))
+        self.assertEqual(result['response']['text'],
+                         'Чтобы приготовить коктейль космополитен, смешайте в шейкере полторы унции цитрусовой водки, '
+                         'половину унции трипл-сек, половину унции сока лайма и одну унцию клюквенного морса')
+
+    def test_multiple_words_cocktail(self):
+        result = cocktail.handle(create_request('как приготовить последнее слово'))
+        self.assertEqual(result['response']['text'],
                          'Чтобы приготовить коктейль последнее слово, в равных пропорциях смешай в шейкере '
                          'зеленый шартрез, джин, ликер мараскино и сок лайма')
 
-    def test_receipt_not_found(self):
-        receipt = cocktail.CocktailList().find('как приготовить хрючево', ['как', 'приготовить', 'хрючево'])
-        self.assertIsNone(receipt)
 
-    def test_help_message(self):
-        help_message = cocktail.help_message()
-        self.assertEqual(help_message, 'Я могу рассказать тебе, как приготовить твой любимый коктейль. Просто скажи '
-                                       'его название.')
-
-    def test_welcome_message(self):
-        welcome_message = cocktail.welcome_message()
-        self.assertEqual(welcome_message, 'Привет! Я твой личный бармен. Расскажу тебе, как правильно смешать '
-                                          'ингредиенты, чтобы получился твой любимый коктейль. Расскажи, что ты хотел '
-                                          'бы выпить. Или можешь спросить меня про коктейль дня')
-
-    def test_description_length(self):
-        pass
-
-    def test_equal_find(self):
-        found_cocktail = cocktail.CocktailList().find('клубничный дайкири', [])
-        self.assertEqual(found_cocktail.get_name(), 'клубничный дайкири')
+def create_request(command, session_new=False):
+    tokens = command.split()
+    return {'version': '1.0', 'session': {'new': session_new},
+            'request': {'original_utterance': command, 'command': command.lower(), 'nlu': {'tokens': tokens}}}
 
 
 if __name__ == '__main__':
