@@ -196,11 +196,11 @@ class CocktailList(list):
 
 
 class Response:
-    def __init__(self, text, cocktail=None, buttons=True):
+    def __init__(self, text, cocktail=None, buttons=True, session_state=None):
         self.text = text
         self.cocktail = cocktail
         self.buttons = buttons
-        self.cocktail = cocktail
+        self.session_state = session_state
 
     def append_response(self, alice_response):
         """Добавляем ответ"""
@@ -232,6 +232,12 @@ class Response:
                         'hide': 'true'
                     }
                 ]
+            })
+
+        """Добавляем состояние сессии"""
+        if self.session_state:
+            alice_response.update({
+                'state': self.session_state
             })
 
 
