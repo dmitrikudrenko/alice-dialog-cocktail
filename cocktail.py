@@ -47,8 +47,8 @@ def handle(event):
                 'title': cocktail.name.capitalize()
             }
         }
-        if cocktail.ingredients:
-            card['card'].update({'description': cocktail.ingredients})  # до 255 символов
+        if cocktail.short_receipt:
+            card['card'].update({'description': cocktail.short_receipt})
         alice_response['response'].update(card)
     return alice_response
 
@@ -147,14 +147,18 @@ def intro(c):
 
 
 class Cocktail:
-    def __init__(self, name, extra_names, receipt, image, ingredients, name_tts, receipt_tts):
+    def __init__(self, name, extra_names, receipt, image, short_receipt, name_tts, receipt_tts, sour, strong, fruit, fresh):
         self.name = name
         self.extra_names = extra_names
         self.receipt = receipt
         self.image = image
-        self.ingredients = ingredients
+        self.short_receipt = short_receipt
         self.name_tts = name_tts
         self.receipt_tts = receipt_tts
+        self.sour = sour
+        self.strong = strong
+        self.fruit = fruit
+        self.fresh = fresh
 
     def get_name(self):
         if self.name_tts:
@@ -179,11 +183,15 @@ class CocktailList(list):
             self.append(Cocktail(
                 obj['original_name'],
                 obj.get('names'),
-                obj['receipt'],
+                obj.get('receipt'),
                 obj.get('image'),
-                obj.get('ingredients'),
+                obj.get('short_receipt'),
                 obj.get('name_tts'),
-                obj.get('receipt_tts')
+                obj.get('receipt_tts'),
+                obj.get('sour'),
+                obj.get('strong'),
+                obj.get('fruit'),
+                obj.get('fresh')
             ))
 
     def find(self, phrase, words):
@@ -218,6 +226,13 @@ class CocktailList(list):
         random_receipt_index = random.randint(0, receipts_count - 1)
         return self[random_receipt_index]
 
+    def filter(self, predicate):
+        filtered = []
+        for c in self:
+            if predicate(c):
+                filtered.append(c)
+        return filtered
+
 
 class Response:
     def __init__(self, text, cocktail=None):
@@ -227,3 +242,7 @@ class Response:
 
 if __name__ == '__main__':
     print('Добавлено {} коктейлей'.format(len(CocktailList())))
+    print('Добавлено {} кислых коктейлей'.format(len(CocktailList().filter(lambda c: c.sour))))
+    print('Добавлено {} крепких коктейлей'.format(len(CocktailList().filter(lambda c: c.strong))))
+    print('Добавлено {} фруктовых коктейлей'.format(len(CocktailList().filter(lambda c: c.fruit))))
+    print('Добавлено {} освежающих коктейлей'.format(len(CocktailList().filter(lambda c: c.fresh))))

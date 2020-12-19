@@ -18,7 +18,7 @@ class DataTestCase(unittest.TestCase):
     def test_description(self):
         """У каждого коктейля должны быть прописаны ингредиенты, но не больше 255 символов"""
         for item in CocktailList():
-            self.assertTrue(0 < len(item.ingredients) <= 255)
+            self.assertTrue(0 < len(item.short_receipt) <= 255)
 
 
 class DialogTestCase(unittest.TestCase):
