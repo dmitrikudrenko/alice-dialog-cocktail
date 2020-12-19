@@ -8,41 +8,15 @@ def handler(event, context):
 
 
 def handle(event):
-    response = get_response(event)
     alice_response = {
         'version': event['version'],
         'session': event['session'],
         'response': {
-            'text': response.text,
             'end_session': 'false'
         }
     }
-    alice_response['response'].update(
-        {
-            'buttons': [
-                {
-                    'title': '📅 Коктейль дня',
-                    'hide': 'true'
-                },
-                {
-                    'title': '✨ Случайный коктейль',
-                    'hide': 'true'
-                }
-            ]
-        }
-    )
-    cocktail = response.cocktail
-    if cocktail:
-        card = {
-            'card': {
-                'type': 'BigImage',
-                'image_id': cocktail.image,
-                'title': cocktail.name.capitalize()
-            }
-        }
-        if cocktail.short_receipt:
-            card['card'].update({'description': cocktail.short_receipt})
-        alice_response['response'].update(card)
+    response = get_response(event)
+    response.append_response(alice_response)
     return alice_response
 
 
@@ -222,9 +196,43 @@ class CocktailList(list):
 
 
 class Response:
-    def __init__(self, text, cocktail=None):
+    def __init__(self, text, cocktail=None, buttons=True):
         self.text = text
         self.cocktail = cocktail
+        self.buttons = buttons
+        self.cocktail = cocktail
+
+    def append_response(self, alice_response):
+        """Добавляем ответ"""
+        alice_response['response'].update({'text': self.text})
+
+        """Добавляем информацию о коктейле"""
+        if self.cocktail:
+            card = {
+                'card': {
+                    'type': 'BigImage',
+                    'image_id': self.cocktail.image,
+                    'title': self.cocktail.name.capitalize()
+                }
+            }
+            if self.cocktail.short_receipt:
+                card['card'].update({'description': self.cocktail.short_receipt})
+            alice_response['response'].update(card)
+
+        """Добавляем кнопки"""
+        if self.buttons:
+            alice_response['response'].update({
+                'buttons': [
+                    {
+                        'title': '📅 Коктейль дня',
+                        'hide': 'true'
+                    },
+                    {
+                        'title': '✨ Случайный коктейль',
+                        'hide': 'true'
+                    }
+                ]
+            })
 
 
 if __name__ == '__main__':
