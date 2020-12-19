@@ -33,13 +33,6 @@ def handle(event):
     )
     cocktail = response.cocktail
     if cocktail:
-        alice_response.update(
-            {
-                'user_state_update': {
-                    'last_receipt': response.text
-                }
-            }
-        )
         card = {
             'card': {
                 'type': 'BigImage',
@@ -67,13 +60,6 @@ def get_response(event):
         return daily_receipt_response()
     elif is_random_receipt_command(command):
         return random_receipt_response()
-    elif is_repeat_command(command):
-        if 'state' in event \
-                and 'user' in event['state'] \
-                and 'last_receipt' in event['state']['user']:
-            return Response(event['state']['user']['last_receipt'])
-        else:
-            return Response(nothing_to_repeat_message())
     else:
         response = query_receipt_response(request)
         if response:
@@ -98,10 +84,6 @@ def is_random_receipt_command(command):
     return 'случайный' in command
 
 
-def is_repeat_command(command):
-    return command in ['повтори', 'еще раз', 'ещё раз']
-
-
 def welcome_message():
     return 'Привет! Я твой личный бармен. Расскажу тебе, как правильно смешать ингредиенты, чтобы получился твой ' \
            'любимый коктейль. Расскажи, что ты хотел бы выпить. Или можешь спросить меня про коктейль дня'
@@ -117,10 +99,6 @@ def gratitude_message():
 
 def unknown_message():
     return 'Я пока не знаю рецепта этого коктейля'
-
-
-def nothing_to_repeat_message():
-    return 'Что повторить?'
 
 
 def daily_receipt_response():
