@@ -146,8 +146,16 @@ def intro(c):
     return 'Чтобы приготовить коктейль {}, {}'.format(c.get_name(), c.get_receipt())
 
 
+class Taste:
+    def __init__(self, sour, strong, fruit, fresh):
+        self.sour = sour
+        self.strong = strong
+        self.fruit = fruit
+        self.fresh = fresh
+
+
 class Cocktail:
-    def __init__(self, name, extra_names, receipt, image, short_receipt, name_tts, receipt_tts, sour, strong, fruit, fresh):
+    def __init__(self, name, extra_names, receipt, image, short_receipt, name_tts, receipt_tts, taste, alcohol):
         self.name = name
         self.extra_names = extra_names
         self.receipt = receipt
@@ -155,10 +163,8 @@ class Cocktail:
         self.short_receipt = short_receipt
         self.name_tts = name_tts
         self.receipt_tts = receipt_tts
-        self.sour = sour
-        self.strong = strong
-        self.fruit = fruit
-        self.fresh = fresh
+        self.taste = taste
+        self.alcohol = alcohol
 
     def get_name(self):
         if self.name_tts:
@@ -188,10 +194,13 @@ class CocktailList(list):
                 obj.get('short_receipt'),
                 obj.get('name_tts'),
                 obj.get('receipt_tts'),
-                obj.get('sour'),
-                obj.get('strong'),
-                obj.get('fruit'),
-                obj.get('fresh')
+                Taste(
+                    obj.get('sour'),
+                    obj.get('strong'),
+                    obj.get('fruit'),
+                    obj.get('fresh')
+                ),
+                obj.get('alcohol')
             ))
 
     def find(self, phrase, words):
@@ -242,7 +251,7 @@ class Response:
 
 if __name__ == '__main__':
     print('Добавлено {} коктейлей'.format(len(CocktailList())))
-    print('Добавлено {} кислых коктейлей'.format(len(CocktailList().filter(lambda c: c.sour))))
-    print('Добавлено {} крепких коктейлей'.format(len(CocktailList().filter(lambda c: c.strong))))
-    print('Добавлено {} фруктовых коктейлей'.format(len(CocktailList().filter(lambda c: c.fruit))))
-    print('Добавлено {} освежающих коктейлей'.format(len(CocktailList().filter(lambda c: c.fresh))))
+    print('Добавлено {} кислых коктейлей'.format(len(CocktailList().filter(lambda c: c.taste.sour))))
+    print('Добавлено {} крепких коктейлей'.format(len(CocktailList().filter(lambda c: c.taste.strong))))
+    print('Добавлено {} фруктовых коктейлей'.format(len(CocktailList().filter(lambda c: c.taste.fruit))))
+    print('Добавлено {} освежающих коктейлей'.format(len(CocktailList().filter(lambda c: c.taste.fresh))))
