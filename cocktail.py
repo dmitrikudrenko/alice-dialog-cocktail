@@ -3,6 +3,7 @@ import json
 import random
 
 
+# noinspection PyUnusedLocal
 def handler(event, context):
     return handle(event)
 
