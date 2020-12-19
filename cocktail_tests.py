@@ -23,7 +23,7 @@ class DataTestCase(unittest.TestCase):
 
 class DialogTestCase(unittest.TestCase):
     def test_welcome_message_for_new_session_without_command(self):
-        result = cocktail.handle(create_request('', True))
+        result = cocktail.handle(create_request(session_new=True))
         self.assertEqual(result['response']['text'],
                          'Привет! Я твой личный бармен. Расскажу тебе, как правильно смешать ингредиенты, чтобы получился твой '
                          'любимый коктейль. Расскажи, что ты хотел бы выпить. Или можешь спросить меня про коктейль дня')
@@ -71,8 +71,13 @@ class DialogTestCase(unittest.TestCase):
                          'Чтобы приготовить коктейль последнее слово, в равных пропорциях смешай в шейкере '
                          'зеленый шартрез, джин, ликер мараскино и сок лайма')
 
+    def test_buttons(self):
+        result = cocktail.handle(create_request(session_new=True))
+        buttons = result['response']['buttons']
+        self.assertEqual(len(buttons), 2)
 
-def create_request(command, session_new=False):
+
+def create_request(command='', session_new=False):
     tokens = command.split()
     return {'version': '1.0', 'session': {'new': session_new},
             'request': {'original_utterance': command, 'command': command.lower(), 'nlu': {'tokens': tokens}}}
