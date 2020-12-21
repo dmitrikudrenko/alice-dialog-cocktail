@@ -76,11 +76,30 @@ class DialogTestCase(unittest.TestCase):
         buttons = result['response']['buttons']
         self.assertEqual(len(buttons), 2)
 
+    def test_last_cocktail(self):
+        result = cocktail.handle(create_request('дайкири'))
+        self.assertEqual(result['session_state']['last_receipt'], 'дайкири')
 
-def create_request(command='', session_new=False):
+    def test_repeat_cocktail(self):
+        result = cocktail.handle(create_request('повтори', session_data={'last_receipt': 'космополитен'}))
+        self.assertEqual(result['response']['text'],
+                         'Чтобы приготовить коктейль космополитен, смешайте в шейкере полторы унции цитрусовой водки, '
+                         'половину унции трипл-сек, половину унции сока лайма и одну унцию клюквенного морса')
+
+    def test_repeat_nothing(self):
+        result = cocktail.handle(create_request('повтори.'))
+        self.assertEqual(result['response']['text'], 'Что повторить?')
+
+
+def create_request(command='', session_new=False, session_data=None):
     tokens = command.split()
-    return {'version': '1.0', 'session': {'new': session_new},
-            'request': {'original_utterance': command, 'command': command.lower(), 'nlu': {'tokens': tokens}}}
+    event = {'version': '1.0', 'session': {'new': session_new},
+             'request': {'original_utterance': command, 'command': command.lower(), 'nlu': {'tokens': tokens}}}
+    if session_data:
+        event.update({
+            'state': {'session': session_data}
+        })
+    return event
 
 
 if __name__ == '__main__':

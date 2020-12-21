@@ -35,12 +35,10 @@ def get_response(event):
         return daily_receipt_response()
     elif is_random_receipt_command(command):
         return random_receipt_response()
+    elif is_repeat_command(command):
+        return query_last_receipt_response(event)
     else:
-        response = query_receipt_response(request)
-        if response:
-            return response
-        else:
-            return Response(unknown_message())
+        return query_receipt_response(request)
 
 
 def is_help_command(command):
@@ -57,6 +55,10 @@ def is_daily_receipt_command(command):
 
 def is_random_receipt_command(command):
     return 'случайный' in command
+
+
+def is_repeat_command(command):
+    return 'повтори' in command
 
 
 def welcome_message():
@@ -76,6 +78,10 @@ def unknown_message():
     return 'Я пока не знаю рецепта этого коктейля'
 
 
+def nothing_to_repeat_message():
+    return 'Что повторить?'
+
+
 def daily_receipt_response():
     daily_cocktail = CocktailList().daily()
     return Response('Коктейль дня - {}. {}'.format(daily_cocktail.get_name(), intro(daily_cocktail)), daily_cocktail)
@@ -89,10 +95,23 @@ def random_receipt_response():
 def query_receipt_response(request):
     tokens = request['nlu']['tokens']
     original_utterance = request['original_utterance']
+    response = find_cocktail(original_utterance, tokens)
+    return response
+
+
+def query_last_receipt_response(event):
+    if 'state' in event and 'session' in event['state'] and 'last_receipt' in event['state']['session']:
+        return find_cocktail(event['state']['session']['last_receipt'], [])
+    else:
+        return Response(nothing_to_repeat_message())
+
+
+def find_cocktail(original_utterance, tokens):
     found_cocktail = CocktailList().find(original_utterance, tokens)
     if found_cocktail:
-        return Response(intro(found_cocktail), found_cocktail)
-    return None
+        return Response(intro(found_cocktail), found_cocktail, session_state={'last_receipt': found_cocktail.name})
+    else:
+        return Response(unknown_message())
 
 
 def intro(c):
@@ -238,7 +257,7 @@ class Response:
         """Добавляем состояние сессии"""
         if self.session_state:
             alice_response.update({
-                'state': self.session_state
+                'session_state': self.session_state
             })
 
 
