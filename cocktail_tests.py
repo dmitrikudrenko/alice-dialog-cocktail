@@ -90,6 +90,17 @@ class DialogTestCase(unittest.TestCase):
         result = cocktail.handle(create_request('повтори.'))
         self.assertEqual(result['response']['text'], 'Что повторить?')
 
+    def test_suggestion_start(self):
+        result = cocktail.handle(create_request('совет'))
+        self.assertEqual(result['response']['text'], 'Какой коктейль хотите попробовать? Крепкий или не крепкий?')
+        self.assertEqual(result['session_state']['suggestion'], True)
+
+    def test_suggestion_strong(self):
+        result = cocktail.handle(create_request('крепкий', session_data={'suggestion': True}))
+        self.assertEqual(result['response']['text'], 'Понятно. Кислый или сладкий?')
+        self.assertEqual(result['session_state']['suggestion'], True)
+        self.assertEqual(result['session_state']['strong'], True)
+
 
 def create_request(command='', session_new=False, session_data=None):
     tokens = command.split()

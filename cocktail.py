@@ -21,6 +21,25 @@ def handle(event):
     return alice_response
 
 
+def is_suggestion_command(command):
+    return 'совет' in command
+
+
+def in_suggestion_workflow(event):
+    return 'state' in event and 'session' in event['state'] and event['state']['session'].get('suggestion')
+
+
+def start_suggestion(event):
+    return Response('Какой коктейль хотите попробовать? Крепкий или не крепкий?', session_state={'suggestion': True})
+
+
+def suggestion_workflow(event):
+    if event['state']['session'].get('strong') is None:
+        is_strong = event['request']['command'] == 'крепкий'
+        if is_strong:
+            return Response('Понятно. Кислый или сладкий?', session_state={'suggestion': True, 'strong': True})
+
+
 def get_response(event):
     request = event['request']
     command = request['command']
@@ -37,6 +56,10 @@ def get_response(event):
         return random_receipt_response()
     elif is_repeat_command(command):
         return query_last_receipt_response(event)
+    elif is_suggestion_command(command):
+        return start_suggestion(event)
+    elif in_suggestion_workflow(event):
+        return suggestion_workflow(event)
     else:
         return query_receipt_response(request)
 
@@ -263,7 +286,7 @@ class Response:
 
 if __name__ == '__main__':
     print('Добавлено {} коктейлей'.format(len(CocktailList())))
-    print('Добавлено {} кислых коктейлей'.format(len(CocktailList().filter(lambda c: c.taste.sour))))
+    print('Добавлено {} кислых коктейлей'.format(len(CocktailList().filter(lambda c: not c.taste.strong and c.taste.sour))))
     print('Добавлено {} крепких коктейлей'.format(len(CocktailList().filter(lambda c: c.taste.strong))))
-    print('Добавлено {} фруктовых коктейлей'.format(len(CocktailList().filter(lambda c: c.taste.fruit))))
-    print('Добавлено {} освежающих коктейлей'.format(len(CocktailList().filter(lambda c: c.taste.fresh))))
+    print('Добавлено {} фруктовых коктейлей'.format(len(CocktailList().filter(lambda c: not c.taste.strong and c.taste.fruit))))
+    print('Добавлено {} освежающих коктейлей'.format(len(CocktailList().filter(lambda c: not c.taste.strong and c.taste.fresh))))
